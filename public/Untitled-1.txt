@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style type="text/css">
+/* 13. Basic Styling with CSS */
+
+/* Style the lines by removing the fill and applying a stroke */
+.line {
+    fill: none;
+    stroke: #ffab00;
+    stroke-width: 3;
+}
+  
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+/* Style the dots by assigning a fill and stroke */
+.dot {
+    fill: #ffab00;
+    stroke: #fff;
+}
+  
+  .focus circle {
+  fill: none;
+  stroke: steelblue;
+}
+
+</style>
+<!-- Body tag is where we will append our SVG and SVG objects-->
+<body>
+</body>
+
+<!-- Load in the . library -->
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+
+// 2. Use the margin convention practice 
+var margin = {top: 50, right: 50, bottom: 50, left: 50}
+  , width = window.innerWidth - margin.left - margin.right // Use the window's width 
+  , height = window.innerHeight - margin.top - margin.bottom; // Use the window's height
+
+// The number of datapoints
+var n = 21;
+
+// 5. X scale will use the index of our data
+var xScale = d3.scaleLinear()
+    .domain([0, n-1]) // input
+    .range([0, width]); // output
+
+// 6. Y scale will use the randomly generate number 
+var yScale = d3.scaleLinear()
+    .domain([0, 1]) // input 
+    .range([height, 0]); // output 
+
+// 7. d3's line generator
+var line = d3.line()
+    .x(function(d, i) { console.log(i,d)
+       return xScale(i); }) // set the x values for the line generator
+    .y(function(d) { return yScale(d.y); }) // set the y values for the line generator 
+    .curve(d3.curveMonotoneX) // apply smoothing to the line
+// 8. An array of objects of length N. Each object has key -> value pair, the key being "y" and the value is a random number
+var dataset = d3.range(n).map(function(d) { return {"y": d3.randomUniform(1)() } })
+console.log(dataset)
+// 1. Add the SVG to the page and employ #2
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// 3. Call the x axis in a group tag
+svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(xScale).tickSize(15)); // Create an axis component with d3.axisBottom
+
+// // 4. Call the y axis in a group tag
+// svg.append("g")
+//     .attr("class", "y axis")
+//     .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
+
+// 9. Append the path, bind the data, and call the line generator 
+svg.append("path")
+    .datum(dataset) // 10. Binds data to the line 
+    .attr("class", "line") // Assign a class for styling 
+    .attr("d", line); // 11. Calls the line generator 
+
+// 12. Appends a circle for each datapoint 
+svg.selectAll(".dot")
+    .data(dataset)
+  .enter().append("circle") // Uses the enter().append() method
+    .attr("class", "dot") // Assign a class for styling
+    .attr("cx", function(d, i) { return xScale(i) })
+    .attr("cy", function(d) { return yScale(d.y) })
+    .attr("r", 5)
+      .on("mouseover", function(a, b, c) { 
+  			console.log(a) 
+        this.attr('class', 'focus')
+		})
+      .on("mouseout", function() {  })
+//       .on("mousemove", mousemove);
+
+//   var focus = svg.append("g")
+//       .attr("class", "focus")
+//       .style("display", "none");
+
+//   focus.append("circle")
+//       .attr("r", 4.5);
+
+//   focus.append("text")
+//       .attr("x", 9)
+//       .attr("dy", ".35em");
+
+//   svg.append("rect")
+//       .attr("class", "overlay")
+//       .attr("width", width)
+//       .attr("height", height)
+//       .on("mouseover", function() { focus.style("display", null); })
+//       .on("mouseout", function() { focus.style("display", "none"); })
+//       .on("mousemove", mousemove);
+  
+//   function mousemove() {
+//     var x0 = x.invert(d3.mouse(this)[0]),
+//         i = bisectDate(data, x0, 1),
+//         d0 = data[i - 1],
+//         d1 = data[i],
+//         d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+//     focus.attr("transform", "translate(" + x(d.date) + "," + y(d.close) + ")");
+//     focus.select("text").text(d);
+//   }
+</script>
+
+
+<style>
+	.axis {
+		font-family: sans-serif;
+
+		font-size: 14px;
+	}
+
+	.line {
+		fill: none;
+		stroke: #f1c40f;
+		stroke-width: 1px;
+	}
+
+	.smoothline {
+		fill: none;
+
+		stroke-width: 1px;
+	}
+
+	.area {
+
+		opacity: 0.5;
+	}
+
+	.circle {
+		stroke: #e74c3c;
+		stroke-width: 1px;
+		fill: #FFF;
+	}
+
+	.grid {
+		stroke: #DDD;
+		stroke-width: 1px;
+		fill: none;
+	}
+</style>
+<svg id="chart"></svg>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script>
+
+	var width = 500;
+	var height = 500;
+	var globalX = 0;
+	var margin = 50;
+	var duration = 500;
+	var max = 500;
+	var step = 1;
+	var chart = d3.select('#chart')
+		.attr('width', width + 50)
+		.attr('height', height + 50);
+	/* Scale */
+	var xScale = d3.scaleTime()
+		.domain(d3.extent(data, d => d.date))
+		.range([0, width - margin]);
+
+	var yScale = d3.scaleLinear()
+		.domain([0, d3.max(data, d => d.price)])
+		.range([height - margin, 0]);
+	var color = d3.scaleOrdinal(d3.schemeCategory10);
+	var x = d3.scaleTime().domain([0, 500]).range([0, 500]);
+	var y = d3.scaleLinear().domain([0, 500]).range([500, 0]);
+	// -----------------------------------
+	var line = d3.line()
+		.x(function (d) { return x(d.x); })
+		.y(function (d) { return y(d.y); });
+	var smoothLine = d3.line().curve(d3.curveCardinal)
+		.x(function (d) { return x(d.x); })
+		.y(function (d) { return y(d.y); });
+	// -----------------------------------
+	// Draw the axis
+	var xAxis = d3.axisBottom().scale(x).ticks(5).tickSize(15)
+
+	var axisX = chart.append('g').attr('class', 'x axis')
+		.attr('transform', 'translate(0, 500)')
+		.call(xAxis);
+	// Draw the grid
+	// Append the holder for line chart and fill area
+	var path = chart.append('path');
+	var areaPath = chart.append('path');
+	// Main loop 
+	function tick() {
+		// Generate new data
+		var point = {
+			x: globalX,
+			y: ((Math.random() * 450 + 50) >> 0)
+		};
+		data.push(point);
+		console.log(data)
+		globalX += step;
+		// Draw new line
+		path.datum(data)
+			.attr('class', 'line')
+			.attr('d', line);
+		// Shift the chart left
+
+		x.domain([globalX - (max - step), globalX]);
+		axisX.transition()
+			.duration(duration)
+			.ease(d3.easeLinear, .1)
+			.call(xAxis);
+		path.attr('transform', null)
+			.transition()
+			.duration(duration)
+			.ease(d3.easeLinear, .1)
+			.attr('transform', 'translate(' + x(globalX - max) + ')')
+			.on('end', tick)
+		// Remote old data (max 50 points)
+		if (data.length > 5) data.shift();
+	}
+	tick();
+</script>
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style type="text/css">
+/* 13. Basic Styling with CSS */
+
+/* Style the lines by removing the fill and applying a stroke */
+.line {
+    fill: none;
+    stroke: #ffab00;
+    stroke-width: 3;
+}
+  
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+/* Style the dots by assigning a fill and stroke */
+.dot {
+    fill: #ffab00;
+    stroke: #fff;
+}
+  
+  .focus circle {
+  fill: none;
+  stroke: steelblue;
+}
+
+</style>
+<!-- Body tag is where we will append our SVG and SVG objects-->
+<body>
+</body>
+
+<!-- Load in the d3 library -->
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+
+// 2. Use the margin convention practice 
+var margin = {top: 50, right: 50, bottom: 50, left: 50}
+  , width = window.innerWidth - margin.left - margin.right // Use the window's width 
+  , height = window.innerHeight - margin.top - margin.bottom; // Use the window's height
+var n = 21;
+var xScale = d3.scaleLinear()
+    .domain([0, n-1]) // input
+    .range([0, width]); // output
+var yScale = d3.scaleLinear()
+    .domain([0, 1]) // input 
+    .range([height, 0]); // output 
+var line = d3.line()
+    .x(function(d, i) { return xScale(i); })
+    .y(function(d) { return yScale(d.y); }) 
+    .curve(d3.curveMonotoneX)
+var dataset = d3.range(n).map(function(d) { return {"y": d3.randomUniform(1)() } })
+console.log(dataset)
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(xScale));
+svg.append("g")
+    .attr("class", "y axis")
+    .call(d3.axisLeft(yScale));
+svg.append("path")
+    .datum(dataset) // 10. Binds data to the line 
+    .attr("class", "line") // Assign a class for styling 
+    .attr("d", line); // 11. Calls the line generator 
+svg.selectAll(".dot")
+    .data(dataset)
+  .enter().append("circle") // Uses the enter().append() method
+    .attr("class", "dot") // Assign a class for styling
+    .attr("cx", function(d, i) { return xScale(i) })
+    .attr("cy", function(d) { return yScale(d.y) })
+    .attr("r", 5)
+</script>
